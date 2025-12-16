@@ -1,0 +1,18 @@
+# Ambientes virtuais
+.venv/
+venv/
+
+# Arquivos de ambiente
+.env
+
+# Caches e compilados
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Configurações locais
+*.sqlite3
