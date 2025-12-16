@@ -1,0 +1,1 @@
+PLACEHOLDER - adicionar logo do estúdio em static/logo.png ou logo.svg
