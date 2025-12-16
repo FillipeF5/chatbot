@@ -3,7 +3,7 @@ Relatório Técnico — Chatbot de Atendimento
 
 Objetivo
 --------
-Desenvolver um protótipo de chatbot de atendimento para o estúdio 'Estúdio Vinicius Queiroz' conforme roteiro fornecido.
+Desenvolver um protótipo de chatbot de atendimento para um estúdio de tatuagem.
 
 Resumo do sistema
 -----------------
