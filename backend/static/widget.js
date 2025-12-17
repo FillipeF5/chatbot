@@ -5,7 +5,11 @@
       // opções e defaults
       const cfg = Object.assign({
         selector: "body",
+<<<<<<< HEAD
         studioName: "Estúdio",
+=======
+        establishmentName: "Estabelecimento",
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
         whatsappNumber: "+5511999999999",
         theme: "dark"
       }, opts||{});
@@ -15,8 +19,13 @@
       // create floating button (FAB)
       const fab = document.createElement("button");
       fab.className = "evq-fab";
+<<<<<<< HEAD
       fab.title = "Abrir chat do Estúdio";
       fab.innerHTML = `<span class="icon">💬</span>`;
+=======
+      fab.title = "Abrir chat";
+      fab.innerHTML = `<span class="icon">🤖</span>`;
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
       root.appendChild(fab);
 
       // widget container (hidden initially)
@@ -25,9 +34,15 @@
       widget.style.display = "none"; // start hidden
       widget.innerHTML = `
         <div class="evq-header">
+<<<<<<< HEAD
           <div class="evq-avatar">🤖</div>
           <div>
             <div class="evq-title">${cfg.studioName}</div>
+=======
+          <div class="evq-avatar">🐧</div>
+          <div>
+            <div class="evq-title">${cfg.establishmentName}</div>
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
             <div class="evq-sub">Atendimento online • Resposta rápida</div>
           </div>
         </div>
@@ -91,7 +106,11 @@
       // initial greeting sequence
       function startConversation(){
         widget.style.display = "flex";
+<<<<<<< HEAD
         bot(`<strong>Olá!</strong> Eu sou o Vini 🤖, assistente do ${cfg.studioName}.<br/>Como posso te ajudar hoje?`);
+=======
+        bot(`<strong>Olá!</strong> Eu sou o FiliPingu 🐧, assistente virtual do ${cfg.establishmentName}.<br/>Como posso te ajudar hoje?`);
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
         state.step = "menu";
         setTimeout(()=> showMainMenu(), 350);
       }
@@ -100,8 +119,13 @@
         bot("Escolha uma opção abaixo:");
         quickButtons([
           {label:"Fazer orçamento", action:"goto_orcamento"},
+<<<<<<< HEAD
           {label:"Agendar tatuagem", action:"goto_agendamento"},
           {label:"Ideias de tatuagem", action:"goto_ideas"},
+=======
+          {label:"Agendamento", action:"goto_agendamento"},
+          {label:"Sugestão", action:"goto_sugestao"},
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
           {label:"FAQ / Informações", action:"goto_faq"},
           {label:"Falar com alguém (WhatsApp)", action:"goto_handoff"}
         ]);
@@ -111,13 +135,21 @@
       function handleQuick(btn){
             // btn = objeto passado na criação do botão
             const act = btn.action || btn.label;
+<<<<<<< HEAD
             const val = btn.value || null;  // <-- corrigido: nunca tenta ler btn.dataset
+=======
+            const val = btn.value || null;  //  nunca tenta ler btn.dataset
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
 
             user(btn.label);
 
             switch(act){
                 case "goto_orcamento":
+<<<<<<< HEAD
                     state.step = "orcamento_regiao";
+=======
+                    state.step = "orcamento";
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
                     setTimeout(startOrcamento, 300);
                     break;
 
@@ -126,7 +158,11 @@
                     setTimeout(startAgendamento, 300);
                     break;
 
+<<<<<<< HEAD
                 case "goto_ideas":
+=======
+                case "goto_sugestao":
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
                     state.step = "ideas_1";
                     setTimeout(ideasFlow, 300);
                     break;
@@ -141,6 +177,7 @@
                     setTimeout(handoff, 300);
                     break;
 
+<<<<<<< HEAD
                 case "select_regiao":
                     state.memory.regiao = val;
                     state.step = "orcamento_tamanho";
@@ -169,6 +206,36 @@
                     state.memory.estilo = val;
                     const est = estimatePrice(state.memory);
                     bot(`Para *${state.memory.estilo}* no local *${state.memory.regiao}* e tamanho *${state.memory.tamanho}* estimamos entre <strong>R$ ${est.min} e R$ ${est.max}</strong>.`);
+=======
+                case "action_orcamento":
+                    state.memory.regiao = val;
+                    state.step = "orcamento_opcoes";
+                    bot(`Ótimo, orçamento para <strong>${val}</strong>. Agora me diga o tipo:`);
+                    quickButtons([
+                        {label:"opção1", action:"action", value:"opção1"},
+                        {label:"opção2", action:"action", value:"opção2"},
+                        {label:"opção3", action:"action", value:"opção3"}
+                    ]);
+                    break;
+
+                case "action":
+                    state.memory.tamanho = val;
+                    state.step = "orcamento_estilo";
+                    bot(`Entendido, <strong>${val}</strong>. Qual marca prefere?`);
+                    quickButtons([
+                        {label:"opção1", action:"action2", value:"opção1"},
+                        {label:"opção2", action:"action2", value:"opção2"},
+                        {label:"opção3", action:"action2", value:"opção3"},
+                        {label:"opção4", action:"action2", value:"opção4"},
+                        {label:"Não sei", action:"action2", value:"Não sei"}
+                    ]);
+                    break;
+
+                case "action2":
+                    state.memory.estilo = val;
+                    const est = estimatePrice(state.memory);
+                    bot(`Para ${state.memory.regiao} da marca ${state.memory.estilo} e ${state.memory.tamanho} estimamos entre <strong>R$ ${est.min} e R$ ${est.max}</strong>.`);
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
                     quickButtons([
                         {label:"Enviar referências via WhatsApp", action:"send_whatsapp_orc"},
                         {label:"Voltar ao menu", action:"back_menu"}
@@ -176,7 +243,11 @@
                     break;
 
                 case "send_whatsapp_orc":
+<<<<<<< HEAD
                     openWhatsApp(`Olá! Gostaria de enviar referências para orçamento. Região: ${state.memory.regiao}. Tamanho: ${state.memory.tamanho}. Estilo: ${state.memory.estilo}.`);
+=======
+                    openWhatsApp(`Olá! Gostaria de solicitar orçamento.`);
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
                     break;
 
                 case "back_menu":
@@ -208,7 +279,11 @@
                     break;
 
                 case "select_idea":
+<<<<<<< HEAD
                     openWhatsApp(`Olá! Gostaria de receber ideias de tatuagem. Preferência: ${btn.label}`);
+=======
+                    openWhatsApp(`Olá! Gostaria de receber ideias. Preferência: ${btn.label}`);
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
                     break;
 
                 default:
@@ -219,6 +294,7 @@
 
       // ---------- ORÇAMENTO flow ----------
       function startOrcamento(){
+<<<<<<< HEAD
         bot("Beleza. Primeiro, selecione a região do corpo:");
         quickButtons([
           {label:"Braço", action:"select_regiao", value:"Braço"},
@@ -227,6 +303,13 @@
           {label:"Perna", action:"select_regiao", value:"Perna"},
           {label:"Pescoço", action:"select_regiao", value:"Pescoço"},
           {label:"Outra", action:"select_regiao", value:"Outra"}
+=======
+        bot("Beleza. Qual o assunto?");
+        quickButtons([
+          {label:"Peças", action:"action_orcamento", value:"Peças"},
+          {label:"Serviços", action:"action_orcamento", value:"Serviços"},
+          {label:"Visita", action:"action_orcamento", value:"Visita"}
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
         ]);
       }
 
@@ -286,7 +369,11 @@
 
       // ---------- HANDOFF (WhatsApp) ----------
       function handoff(){
+<<<<<<< HEAD
         bot("Ok — vou abrir o WhatsApp para você falar com alguém do estúdio. Deseja prosseguir?");
+=======
+        bot("Ok — vou abrir o WhatsApp para você falar com alguém. Deseja prosseguir?");
+>>>>>>> 26cb53f (dinamização, generalizando nicho/usabilidade)
         quickButtons([{label:"Abrir WhatsApp", action:"open_whatsapp_handoff"}, {label:"Voltar", action:"back_menu"}]);
       }
 
