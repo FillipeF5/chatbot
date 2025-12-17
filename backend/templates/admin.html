@@ -4,31 +4,144 @@
   <meta charset="utf-8">
   <title>Painel Admin - Estúdio Vinicius Queiroz</title>
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;padding:20px;background:#fafafa}
-    table{width:100%;border-collapse:collapse}
-    th,td{border:1px solid #ddd;padding:8px}
-    th{background:#222;color:#fff}
-    .badge{padding:4px 8px;border-radius:6px;background:#eee}
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
+    h1, h2 { color: #1a1a1a; }
+    .container { max-width: 1200px; margin: auto; }
+    
+    /* Tabela de Agendamentos */
+    .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { text-align: left; border-bottom: 1px solid #ddd; padding: 12px; }
+    th { background: #222; color: #fff; border-radius: 4px 4px 0 0; }
+    tr:hover { background: #f9f9f9; }
+    
+    /* Formulário de Configuração */
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+    input[type="text"], textarea { 
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;
+    }
+    textarea { height: 80px; resize: vertical; }
+    .btn-save { 
+      background: #28a745; color: white; border: none; padding: 12px 25px; 
+      border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.2s;
+    }
+    .btn-save:hover { background: #218838; }
+    .status-msg { margin-top: 10px; font-weight: bold; display: none; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-  <h1>Painel Admin — Estúdio Vinicius Queiroz</h1>
-  <p><a href="/">Voltar</a></p>
-  <table>
-    <thead><tr><th>ID</th><th>Nome</th><th>Telefone</th><th>Serviço</th><th>Data/Hora</th><th>Status</th><th>Criado em</th></tr></thead>
-    <tbody id="rows">
-    {% for a in appointments %}
-      <tr><td>{{a.id}}</td><td>{{a.name}}</td><td>{{a.phone}}</td><td>{{a.service}}</td><td>{{a.datetime}}</td><td>{{a.status}}</td><td>{{a.created_at}}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <div class="container">
+    <h1>Painel Administrativo</h1>
+    <p><a href="/">⬅ Voltar para a Demo</a></p>
+
+    <div class="card">
+      <h2>📅 Últimos Agendamentos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>Serviço</th>
+            <th>Data/Hora</th>
+            <th>Criado em</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          {% for a in appointments %}
+          <tr>
+            <td>{{a.id}}</td>
+            <td><strong>{{a.name}}</strong></td>
+            <td>{{a.phone}}</td>
+            <td>{{a.service}}</td>
+            <td>{{a.datetime}}</td>
+            <td><small>{{a.created_at}}</small></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ Configurações do Chatbot (FiliPingu 🐧)</h2>
+      <div id="bot-form">
+        <div class="form-group">
+          <label for="cfg_name">Nome do Estabelecimento:</label>
+          <input type="text" id="cfg_name" placeholder="Ex: Estúdio Vinicius Queiroz">
+        </div>
+        
+        <div class="form-group">
+          <label for="cfg_whatsapp">WhatsApp (Número com DDD, ex: +55 11 99999-9999):</label>
+          <input type="text" id="cfg_whatsapp" placeholder="Apenas números">
+        </div>
+        
+        <div class="form-group">
+          <label for="cfg_welcome">Mensagem de Boas-vindas do chatbot:</label>
+          <textarea id="cfg_welcome" placeholder="Olá! Como posso ajudar você hoje?"></textarea>
+        </div>
+        
+        <button class="btn-save" onclick="saveBotConfig()">Salvar Alterações</button>
+        <div id="status-msg" class="status-msg">✅ Configuractions salvas!</div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // --- LÓGICA DE TEMPO REAL (SOCKET.IO) ---
     const socket = io();
     socket.on("new_appointment", (data) => {
-      alert("Novo agendamento recebido: " + data.name + " (" + data.phone + ")");
-      // In a production UI we'd prepend a row via DOM manipulation
+      alert("🔔 Novo agendamento: " + data.name);
+      location.reload(); // Recarrega para mostrar o novo dado na tabela
     });
+
+    // --- LÓGICA DE CONFIGURAÇÃO ---
+    
+    // 1. Ao carregar a página, busca as infos atuais do Banco
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/api/bot/config')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('cfg_name').value = data.settings.establishment_name || "";
+          document.getElementById('cfg_whatsapp').value = data.settings.whatsapp_number || "";
+          document.getElementById('cfg_welcome').value = data.flows.main_menu.message || "";
+        })
+        .catch(err => console.error("Erro ao carregar dados do bot:", err));
+    });
+
+    // 2. Função para salvar as alterações
+    function saveBotConfig() {
+      const msgEl = document.getElementById('status-msg');
+      const payload = {
+        settings: {
+          establishment_name: document.getElementById('cfg_name').value,
+          whatsapp_number: document.getElementById('cfg_whatsapp').value
+        },
+        welcome_message: document.getElementById('cfg_welcome').value
+      };
+
+      // Nota: Usamos o auth simples definido no app.py (admin123)
+      fetch('/admin/save_config?auth=admin123', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.status === "success") {
+          msgEl.style.display = "block";
+          msgEl.style.color = "green";
+          msgEl.innerText = "✅ Alterações aplicadas com sucesso!";
+          setTimeout(() => { msgEl.style.display = "none"; }, 3000);
+        }
+      })
+      .catch(err => {
+        msgEl.style.display = "block";
+        msgEl.style.color = "red";
+        msgEl.innerText = "❌ Erro ao salvar.";
+      });
+    }
   </script>
 </body>
 </html>

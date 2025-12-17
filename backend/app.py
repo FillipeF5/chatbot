@@ -80,6 +80,34 @@ def admin_index():
     conn.close()
     return render_template("admin.html", appointments=appts)
 
+
+@app.route("/admin/save_config", methods=["POST"])
+def save_config():
+    auth = request.args.get("auth", "")
+    if auth != "admin123":
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.json
+    conn = get_db()
+    cur = conn.cursor()
+    
+    # Salva configurações gerais
+    if "settings" in data:
+        for key, value in data["settings"].items():
+            cur.execute("INSERT OR REPLACE INTO bot_config (key, value) VALUES (?, ?)", (key, value))
+            
+    # Salva a mensagem inicial do fluxo
+    if "welcome_message" in data:
+        # Buscamos as opções atuais para não sobrescrever os botões, apenas o texto
+        current = cur.execute("SELECT options FROM bot_steps WHERE id = 'main_menu'").fetchone()
+        options = current['options'] if current else "[]"
+        cur.execute("INSERT OR REPLACE INTO bot_steps (id, message, options) VALUES (?, ?, ?)", 
+                    ("main_menu", data["welcome_message"], options))
+    
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "success"})
+
 @app.route("/admin/login", methods=["GET","POST"])
 def admin_login():
     if request.method == "POST":
