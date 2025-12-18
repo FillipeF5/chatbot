@@ -2,145 +2,200 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Painel Admin - Estúdio Vinicius Queiroz</title>
+  <title>Admin - Gerenciador de Fluxos</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
-    h1, h2 { color: #1a1a1a; }
-    .container { max-width: 1200px; margin: auto; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
+    .container { max-width: 1100px; margin: auto; }
+    .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }
+    h1, h2 { color: #2c3e50; }
     
-    /* Tabela de Agendamentos */
-    .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { text-align: left; border-bottom: 1px solid #ddd; padding: 12px; }
-    th { background: #222; color: #fff; border-radius: 4px 4px 0 0; }
-    tr:hover { background: #f9f9f9; }
+    /* Tabela de Fluxos */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+    th { background: #34495e; color: white; }
+    .btn-edit { color: #3498db; cursor: pointer; font-weight: bold; border: none; background: none; }
+    .btn-delete { color: #e74c3c; cursor: pointer; margin-left: 10px; border: none; background: none; }
+
+    /* Editor de Passo */
+    .form-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #fafafa; padding: 20px; border-radius: 8px; border: 1px dashed #ccc; }
+    .full-width { grid-column: span 2; }
+    input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
     
-    /* Formulário de Configuração */
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
-    input[type="text"], textarea { 
-      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px;
-    }
-    textarea { height: 80px; resize: vertical; }
-    .btn-save { 
-      background: #28a745; color: white; border: none; padding: 12px 25px; 
-      border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.2s;
-    }
-    .btn-save:hover { background: #218838; }
-    .status-msg { margin-top: 10px; font-weight: bold; display: none; }
+    /* Área de Botões dinâmicos */
+    .button-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; }
+    .btn-add-opt { background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    .btn-save-main { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; width: 100%; }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Painel Administrativo</h1>
-    <p><a href="/">⬅ Voltar para a Demo</a></p>
+    <h1>Painel de Controle — FiliPingu 🐧</h1>
+    <p><a href="/">⬅ Ver Site</a> | <a href="/admin">🔄 Atualizar Painel</a></p>
 
     <div class="card">
-      <h2>📅 Últimos Agendamentos</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>Serviço</th>
-            <th>Data/Hora</th>
-            <th>Criado em</th>
-          </tr>
-        </thead>
-        <tbody id="rows">
-          {% for a in appointments %}
-          <tr>
-            <td>{{a.id}}</td>
-            <td><strong>{{a.name}}</strong></td>
-            <td>{{a.phone}}</td>
-            <td>{{a.service}}</td>
-            <td>{{a.datetime}}</td>
-            <td><small>{{a.created_at}}</small></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <h2>⚙️ Configurações Gerais</h2>
+      <div class="form-box">
+        <div>
+          <label>Nome do Estúdio</label>
+          <input type="text" id="cfg_name">
+        </div>
+        <div>
+          <label>WhatsApp</label>
+          <input type="text" id="cfg_whatsapp">
+        </div>
+      </div>
+      <button class="btn-save-main" onclick="saveGeneralConfig()">Salvar Configurações Gerais</button>
     </div>
 
     <div class="card">
-      <h2>⚙️ Configurações do Chatbot (FiliPingu 🐧)</h2>
-      <div id="bot-form">
-        <div class="form-group">
-          <label for="cfg_name">Nome do Estabelecimento:</label>
-          <input type="text" id="cfg_name" placeholder="Ex: Estúdio Vinicius Queiroz">
+      <h2>🌳 Fluxo de Conversa (Perguntas e Respostas)</h2>
+      
+      <div id="editor-fluxo" class="form-box" style="margin-bottom: 30px; border: 2px solid #3498db;">
+        <div class="full-width">
+          <h3 id="editor-title">Criar Novo Passo</h3>
+        </div>
+        <div>
+          <label>ID Único (ex: info_precos)</label>
+          <input type="text" id="step_id" placeholder="Sem espaços">
+        </div>
+        <div class="full-width">
+          <label>Mensagem do Bot (O que ele vai falar)</label>
+          <textarea id="step_message" placeholder="Olá! O preço começa em..."></textarea>
         </div>
         
-        <div class="form-group">
-          <label for="cfg_whatsapp">WhatsApp (Número com DDD, ex: +55 11 99999-9999):</label>
-          <input type="text" id="cfg_whatsapp" placeholder="Apenas números">
+        <div class="full-width">
+          <label><strong>Botões de Resposta do Cliente:</strong></label>
+          <div id="buttons-container">
+            </div>
+          <button class="btn-add-opt" onclick="addButtonRow()">+ Adicionar Botão</button>
         </div>
         
-        <div class="form-group">
-          <label for="cfg_welcome">Mensagem de Boas-vindas do chatbot:</label>
-          <textarea id="cfg_welcome" placeholder="Olá! Como posso ajudar você hoje?"></textarea>
+        <div class="full-width">
+            <button class="btn-save-main" onclick="saveStep()" style="background: #3498db;">Salvar Passo do Fluxo</button>
+            <button onclick="resetEditor()" style="border:none; background:none; color:gray; cursor:pointer;">Cancelar</button>
         </div>
-        
-        <button class="btn-save" onclick="saveBotConfig()">Salvar Alterações</button>
-        <div id="status-msg" class="status-msg">✅ Configuractions salvas!</div>
       </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID do Passo</th>
+            <th>Mensagem</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="steps-table-body">
+          </tbody>
+      </table>
     </div>
   </div>
 
   <script>
-    // --- LÓGICA DE TEMPO REAL (SOCKET.IO) ---
-    const socket = io();
-    socket.on("new_appointment", (data) => {
-      alert("🔔 Novo agendamento: " + data.name);
-      location.reload(); // Recarrega para mostrar o novo dado na tabela
-    });
+    // --- LÓGICA DO CRUD DE FLUXOS ---
 
-    // --- LÓGICA DE CONFIGURAÇÃO ---
-    
-    // 1. Ao carregar a página, busca as infos atuais do Banco
+    // Carregar dados iniciais
     document.addEventListener('DOMContentLoaded', () => {
-      fetch('/api/bot/config')
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('cfg_name').value = data.settings.establishment_name || "";
-          document.getElementById('cfg_whatsapp').value = data.settings.whatsapp_number || "";
-          document.getElementById('cfg_welcome').value = data.flows.main_menu.message || "";
-        })
-        .catch(err => console.error("Erro ao carregar dados do bot:", err));
+      loadGeneralConfig();
+      loadSteps();
     });
 
-    // 2. Função para salvar as alterações
-    function saveBotConfig() {
-      const msgEl = document.getElementById('status-msg');
+    function loadGeneralConfig() {
+      fetch('/api/bot/config').then(r => r.json()).then(data => {
+        document.getElementById('cfg_name').value = data.settings.establishment_name || "";
+        document.getElementById('cfg_whatsapp').value = data.settings.whatsapp_number || "";
+      });
+    }
+
+    function loadSteps() {
+      fetch('/api/bot/config').then(r => r.json()).then(data => {
+        const tbody = document.getElementById('steps-table-body');
+        tbody.innerHTML = "";
+        
+        Object.keys(data.flows).forEach(id => {
+          const flow = data.flows[id];
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${id}</strong></td>
+              <td>${flow.message.substring(0, 50)}...</td>
+              <td>
+                <button class="btn-edit" onclick="editStep('${id}', ${JSON.stringify(flow).replace(/"/g, '&quot;')})">Editar</button>
+                <button class="btn-delete" onclick="deleteStep('${id}')">Excluir</button>
+              </td>
+            </tr>
+          `;
+        });
+      });
+    }
+
+    // Gerenciamento dinâmico de botões no formulário
+    function addButtonRow(label = "", action = "") {
+      const container = document.getElementById('buttons-container');
+      const div = document.createElement('div');
+      div.className = 'button-row';
+      div.innerHTML = `
+        <input type="text" placeholder="Texto do Botão" value="${label}" class="opt-label">
+        <input type="text" placeholder="ID de Destino (Action)" value="${action}" class="opt-action">
+        <button onclick="this.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer;">✖</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function saveStep() {
+      const id = document.getElementById('step_id').value;
+      const message = document.getElementById('step_message').value;
+      const labels = document.querySelectorAll('.opt-label');
+      const actions = document.querySelectorAll('.opt-action');
+      
+      const options = [];
+      labels.forEach((l, i) => {
+        if(l.value) options.push({ label: l.value, action: actions[i].value });
+      });
+
+      const payload = { id, message, options };
+
+      fetch('/admin/api/steps/save?auth=admin123', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      }).then(() => {
+        alert("Passo salvo!");
+        resetEditor();
+        loadSteps();
+      });
+    }
+
+    function editStep(id, data) {
+      document.getElementById('editor-title').innerText = "Editando Passo: " + id;
+      document.getElementById('step_id').value = id;
+      document.getElementById('step_id').disabled = true;
+      document.getElementById('step_message').value = data.message;
+      
+      const container = document.getElementById('buttons-container');
+      container.innerHTML = "";
+      data.options.forEach(opt => addButtonRow(opt.label, opt.action));
+      window.scrollTo(0, 500);
+    }
+
+    function resetEditor() {
+      document.getElementById('editor-title').innerText = "Criar Novo Passo";
+      document.getElementById('step_id').value = "";
+      document.getElementById('step_id').disabled = false;
+      document.getElementById('step_message').value = "";
+      document.getElementById('buttons-container').innerHTML = "";
+    }
+
+    function saveGeneralConfig() {
       const payload = {
         settings: {
           establishment_name: document.getElementById('cfg_name').value,
           whatsapp_number: document.getElementById('cfg_whatsapp').value
-        },
-        welcome_message: document.getElementById('cfg_welcome').value
+        }
       };
-
-      // Nota: Usamos o auth simples definido no app.py (admin123)
       fetch('/admin/save_config?auth=admin123', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
-        if(data.status === "success") {
-          msgEl.style.display = "block";
-          msgEl.style.color = "green";
-          msgEl.innerText = "✅ Alterações aplicadas com sucesso!";
-          setTimeout(() => { msgEl.style.display = "none"; }, 3000);
-        }
-      })
-      .catch(err => {
-        msgEl.style.display = "block";
-        msgEl.style.color = "red";
-        msgEl.innerText = "❌ Erro ao salvar.";
-      });
+      }).then(() => alert("Configurações gerais salvas!"));
     }
   </script>
 </body>

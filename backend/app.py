@@ -3,6 +3,7 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
 from flask_socketio import SocketIO, emit
 import sqlite3, os, json, datetime
+import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "estudio.db")
@@ -107,6 +108,55 @@ def save_config():
     conn.commit()
     conn.close()
     return jsonify({"status": "success"})
+
+@app.route("/admin/api/steps/save", methods=["POST"])
+def save_step():
+    auth = request.args.get("auth", "")
+    if auth != "admin123":
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.json
+    step_id = data.get("id")
+    message = data.get("message")
+    options = data.get("options") # Isso virá como uma lista de objetos
+
+    if not step_id or not message:
+        return jsonify({"error": "ID e Mensagem são obrigatórios"}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    
+    try:
+        # Convertemos a lista de opções para uma string JSON antes de salvar no banco
+        options_json = json.dumps(options)
+        
+        cur.execute("""
+            INSERT OR REPLACE INTO bot_steps (id, message, options) 
+            VALUES (?, ?, ?)
+        """, (step_id, message, options_json))
+        
+        conn.commit()
+        return jsonify({"status": "success", "message": f"Passo '{step_id}' salvo."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+# Rota opcional para excluir passos, caso queira usar o botão de deletar do admin
+@app.route("/admin/api/steps/delete/<step_id>", methods=["DELETE"])
+def delete_step(step_id):
+    auth = request.args.get("auth", "")
+    if auth != "admin123":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM bot_steps WHERE id = ?", (step_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "success"})
+
+
 
 @app.route("/admin/login", methods=["GET","POST"])
 def admin_login():
