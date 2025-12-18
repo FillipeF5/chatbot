@@ -4,6 +4,18 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, f
 from flask_socketio import SocketIO, emit
 import sqlite3, os, json, datetime
 import json
+import os
+from dotenv import load_dotenv
+
+# Carrega as variáveis do arquivo .env se ele existir
+load_dotenv()
+
+# 2. Define o Token (Pega do ambiente ou usa fallback se não existir)
+ADMIN_TOKEN = os.getenv("ADMIN_AUTH_TOKEN", "admin")
+
+if not ADMIN_TOKEN:
+    print("⚠️ AVISO: ADMIN_AUTH_TOKEN não definido no .env! Usando padrão temporário.")
+    ADMIN_TOKEN = ADMIN_TOKEN # Fallback para você não ficar trancado fora
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "estudio.db")
@@ -71,7 +83,7 @@ def create_appointment():
 @app.route("/admin")
 def admin_index():
     auth = request.args.get("auth", "")
-    if auth != "admin123":
+    if auth != ADMIN_TOKEN:
         return redirect(url_for("admin_login"))
     
     conn = get_db()
@@ -79,13 +91,13 @@ def admin_index():
     rows = cur.execute("SELECT * FROM appointments ORDER BY created_at DESC").fetchall()
     appts = [dict(r) for r in rows]
     conn.close()
-    return render_template("admin.html", appointments=appts)
+    return render_template("admin.html", appointments=appts, auth_token=ADMIN_TOKEN)
 
 
 @app.route("/admin/save_config", methods=["POST"])
 def save_config():
     auth = request.args.get("auth", "")
-    if auth != "admin123":
+    if auth != ADMIN_TOKEN:
         return jsonify({"error": "Unauthorized"}), 401
     
     data = request.json
@@ -112,7 +124,7 @@ def save_config():
 @app.route("/admin/api/steps/save", methods=["POST"])
 def save_step():
     auth = request.args.get("auth", "")
-    if auth != "admin123":
+    if auth != ADMIN_TOKEN:
         return jsonify({"error": "Unauthorized"}), 401
     
     data = request.json
@@ -146,7 +158,7 @@ def save_step():
 @app.route("/admin/api/steps/delete/<step_id>", methods=["DELETE"])
 def delete_step(step_id):
     auth = request.args.get("auth", "")
-    if auth != "admin123":
+    if auth != ADMIN_TOKEN:
         return jsonify({"error": "Unauthorized"}), 401
 
     conn = get_db()
@@ -162,8 +174,8 @@ def delete_step(step_id):
 def admin_login():
     if request.method == "POST":
         pw = request.form.get("password","")
-        if pw == "admin123":
-            return redirect(url_for("admin_index", auth="admin123"))
+        if pw == ADMIN_TOKEN:
+            return redirect(url_for("admin_index", auth=ADMIN_TOKEN))
         else:
             flash("Senha incorreta")
     return render_template("login.html")

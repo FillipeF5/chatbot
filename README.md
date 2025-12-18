@@ -1,121 +1,86 @@
+🐧 FiliPingu - Chatbot Dinâmico para Estúdios de Tattoo
+Este projeto é um ecossistema de atendimento automatizado composto por um Widget de Chat inteligente, um Backend em Python e um Painel Administrativo para gestão de fluxos em tempo real.
 
-Relatório Técnico — Chatbot de Atendimento
+🚀 O que mudou (Arquitetura Atual)
+O chatbot não possui mais respostas "hardcoded" (fixas no código). Ele funciona como um motor de renderização de estados:
 
-**Sumário**
-- **Objetivo:** Protótipo de chatbot de atendimento para um estúdio de tatuagem.
-- **Status:** Protótipo local funcional com frontend, backend e banco SQLite.
+O administrador define "Passos" (Steps) no painel.
 
-**Índice**
-- **Visão Geral**
-- **Funcionalidades**
-- **Arquitetura & Fluxo**
-- **Tecnologias e Bibliotecas**
-- **Estrutura do Projeto**
-- **Como Rodar (Desenvolvimento)**
-- **Endpoints e Painel Admin**
-- **Banco de Dados**
-- **Segurança e Produção**
+Cada passo tem uma mensagem e botões de resposta.
 
-**Visão Geral**
-Este projeto implementa um protótipo de chatbot de atendimento pensado para um estúdio de tatuagem. Fornece:
-- Um widget embutível para sites (frontend) que permite interação com usuários.
-- Um backend em Python (Flask + Flask-SocketIO) que expõe APIs para agendamentos e gerencia o painel admin.
-- Persistência em SQLite para facilitar testes locais.
+Cada botão aponta para o ID de outro passo, criando uma árvore de decisão infinita sem tocar no código JavaScript.
 
-**Funcionalidades**
-- Widget JavaScript para incorporar conversas em páginas web.
-- Painel administrativo simples em `/admin` para visualizar/agendar atendimentos.
-- API REST mínima (`/api/*`) para operações de agendamento e verificação.
-- Integração simples via link para WhatsApp (abre conversa com mensagem pré-preenchida).
-- Comunicação em tempo real entre frontend e backend via Socket.IO para interatividade do widget.
+🛠️ Tecnologias Utilizadas
+Backend: Python 3 + Flask.
 
-**Arquitetura & Fluxo**
-- O frontend (página principal e widget) carrega `widget.js`/`widget.css` e se conecta ao backend via Socket.IO.
-- O backend (`backend/app.py`) recebe mensagens, salva dados em `backend/estudio.db` e expõe endpoints REST para operações CRUD básicas de agendamento.
-- O painel admin (`/admin`) consulta os dados do banco e permite operações administrativas básicas (protótipo local — sem autenticação forte).
+Banco de Dados: SQLite (persistência de configurações e fluxos).
 
-**Tecnologias e Bibliotecas**
-- **Linguagem:** Python 3.x
-- **Framework Web:** Flask
-- **Realtime:** Flask-SocketIO + python-socketio (Eventlet como servidor recomendado)
-- **Banco:** SQLite
-- **Frontend:** HTML/CSS/JS (widget embutível em `frontend/index.html`)
+Comunicação: JSON via REST API + WebSockets (Socket.io) para notificações em tempo real.
 
-**Estrutura do Projeto**
-- `backend/` : código do servidor (ex.: `app.py`, `init_db.py`, `estudio.db`)
-- `frontend/` : demo da interface e instruções do widget (`index.html`, `INSTRUCTIONS_WIDGET.md`)
-- `static/` (do backend): `widget.js`, `widget.css`, `logo.txt`
-- `run_local.ps1`, `run_local.sh`: scripts de execução local
-- `requirements.txt`: dependências Python
+Frontend: Vanilla JavaScript (ES6+), CSS3 e HTML5.
 
-**Como Rodar (Desenvolvimento)**
-Pré-requisitos:
-- Python 3.8+ instalado
-- Recomenda-se criar um ambiente virtual
+✨ Funcionalidades Principais
+Painel Admin CRUD: Interface para criar, editar e excluir perguntas e botões do fluxo de conversa.
 
-Passos (Windows PowerShell):
-```powershell
-# 1. Criar e ativar um virtualenv (opcional, recomendado)
-python -m venv .venv; .\.venv\Scripts\Activate.ps1
+Motor Genérico: O widget carrega as configurações do banco e navega pelos IDs dinamicamente.
 
-# 2. Instalar dependências
-pip install -r requirements.txt
+Ações de Sistema (sys_): Suporte a funções especiais como redirecionamento para WhatsApp (sys_whatsapp) e reinicialização de chat (sys_reload).
 
-# 3. Inicializar o banco de dados (se aplicável)
+Configurações Globais: Edição do nome do estúdio e número de contato diretamente pelo painel.
+
+Notificações em Tempo Real: Alertas via Socket.io para novos eventos de interesse.
+
+📂 Estrutura do Projeto
+Plaintext
+
+/
+├── backend/
+│   ├── app.py              # Servidor Flask e Rotas de API
+│   ├── init_db.py          # Script de inicialização do SQLite
+│   ├── estudio.db          # Banco de dados (Gerado ao iniciar)
+│   └── templates/
+│       ├── index.html      # Página demo (Landing Page)
+│       └── admin.html      # Painel de controle do gestor
+├── static/
+│   ├── css/
+│   │   └── style.css       # Estilização do Widget e Admin
+│   └── js/
+│       └── widget.js       # O "Motor" do Chatbot
+└── README.md
+⚙️ Como Instalar e Rodar
+Instale as dependências:
+
+Bash
+
+pip install flask flask-socketio
+Inicialize o Banco de Dados:
+
+Bash
+
 python backend/init_db.py
+Inicie o servidor:
 
-# 4. Iniciar o servidor (modo local)
+Bash
+
 python backend/app.py
+Acesse:
 
-# Alternativa: executar script de conveniência
-.\run_local.ps1
-```
+Widget: http://localhost:5000
 
-Passos (Linux / macOS / WSL):
-```bash
-python3 -m venv .venv; source .venv/bin/activate
-pip install -r requirements.txt
-python backend/init_db.py
-./run_local.sh
-```
+Admin: http://localhost:5000/admin (Credencial atual: auth=admin123)
 
-Após iniciar o servidor, acesse `http://localhost:5000` no navegador. O painel admin está na rota `http://localhost:5000/admin`.
+💡 Como configurar novos fluxos
+No Admin, crie um passo com um ID Único (ex: faq_horario).
 
-**Endpoints conhecidos**
-- `GET /api/ping` : verifica se a API está respondendo.
-- `GET|POST /api/appointments` : listar e criar agendamentos (implementar conforme rotas no backend).
-- Rotas do painel: `/admin` (painel administrativo)
+Defina a mensagem que o Pinguim dirá.
 
-Observação: os endpoints exatos e payloads dependem da implementação em `backend/app.py`; revise esse arquivo para detalhes de uso.
+No ID de Destino de qualquer botão, aponte para o ID criado.
 
-**Banco de Dados**
-- Arquivo SQLite: `backend/estudio.db` (inicializado por `backend/init_db.py`).
-- Contém tabelas de exemplo com registros para demonstração.
+Para links externos de WhatsApp, utilize a ação reservada sys_whatsapp.
 
-**Widget e Integração**
-- O widget embutível está em `frontend/index.html` e os assets em `backend/static/widget.js` e `backend/static/widget.css`.
-- O widget se conecta ao servidor via Socket.IO para troca de mensagens em tempo real.
-- Integração com WhatsApp é feita via link que abre a conversa com uma mensagem pré-preenchida — não integra envio via API oficial.
+📝 Próximos Passos (Roadmap)
+[ ] Adicionar suporte a upload de imagens no chat.
 
-**Credenciais (provisórias de protótipo)**
-- Painel admin: senha `admin123` (apenas para uso local / protótipo)
+[ ] Implementar sistema de agendamento com calendário real.
 
-**Considerações de Segurança e Produção**
-- Este projeto é um protótipo. Antes de usar em produção, recomenda-se:
-  - Implementar autenticação segura e controle de acesso no painel admin.
-  - Habilitar HTTPS e armazenar segredos em variáveis de ambiente.
-  - Validar e sanitizar todas as entradas do usuário.
-  - Substituir a integração por WhatsApp por uma solução oficial (WhatsApp Business API) para envio controlado.
-  - Migrar do SQLite para um SGBD mais robusto conforme a necessidade (Postgres, MySQL).
-
-**Como contribuir / próximos passos**
-- Verifique `backend/app.py` para expandir endpoints e regras de validação.
-- Melhorar o widget com histórico de conversas e melhor tratamento de erros.
-- Adicionar testes automatizados e CI para builds.
-
-**Contato / Autor**
-- Projeto de prototipação (demo). Para dúvidas ou contribuições, abra uma issue ou PR no repositório.
-
----
-Arquivo atualizado automaticamente com instruções de start e descrição do sistema.
-
+[ ] Dashboard de Analytics (Gráficos de cliques e conversões).

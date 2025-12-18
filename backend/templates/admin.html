@@ -1,32 +1,127 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Admin - Gerenciador de Fluxos</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
-    .container { max-width: 1100px; margin: auto; }
-    .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }
-    h1, h2 { color: #2c3e50; }
-    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      background: #f4f7f6;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    h1,
+    h2 {
+      color: #2c3e50;
+    }
+
     /* Tabela de Fluxos */
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-    th { background: #34495e; color: white; }
-    .btn-edit { color: #3498db; cursor: pointer; font-weight: bold; border: none; background: none; }
-    .btn-delete { color: #e74c3c; cursor: pointer; margin-left: 10px; border: none; background: none; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #34495e;
+      color: white;
+    }
+
+    .btn-edit {
+      color: #3498db;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      background: none;
+    }
+
+    .btn-delete {
+      color: #e74c3c;
+      cursor: pointer;
+      margin-left: 10px;
+      border: none;
+      background: none;
+    }
 
     /* Editor de Passo */
-    .form-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #fafafa; padding: 20px; border-radius: 8px; border: 1px dashed #ccc; }
-    .full-width { grid-column: span 2; }
-    input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-    
+    .form-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px dashed #ccc;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
     /* Área de Botões dinâmicos */
-    .button-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; }
-    .btn-add-opt { background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-    .btn-save-main { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; width: 100%; }
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .btn-add-opt {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-save-main {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+      width: 100%;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Painel de Controle — FiliPingu 🐧</h1>
@@ -49,7 +144,7 @@
 
     <div class="card">
       <h2>🌳 Fluxo de Conversa (Perguntas e Respostas)</h2>
-      
+
       <div id="editor-fluxo" class="form-box" style="margin-bottom: 30px; border: 2px solid #3498db;">
         <div class="full-width">
           <h3 id="editor-title">Criar Novo Passo</h3>
@@ -62,17 +157,18 @@
           <label>Mensagem do Bot (O que ele vai falar)</label>
           <textarea id="step_message" placeholder="Olá! O preço começa em..."></textarea>
         </div>
-        
+
         <div class="full-width">
           <label><strong>Botões de Resposta do Cliente:</strong></label>
           <div id="buttons-container">
-            </div>
+          </div>
           <button class="btn-add-opt" onclick="addButtonRow()">+ Adicionar Botão</button>
         </div>
-        
+
         <div class="full-width">
-            <button class="btn-save-main" onclick="saveStep()" style="background: #3498db;">Salvar Passo do Fluxo</button>
-            <button onclick="resetEditor()" style="border:none; background:none; color:gray; cursor:pointer;">Cancelar</button>
+          <button class="btn-save-main" onclick="saveStep()" style="background: #3498db;">Salvar Passo do Fluxo</button>
+          <button onclick="resetEditor()"
+            style="border:none; background:none; color:gray; cursor:pointer;">Cancelar</button>
         </div>
       </div>
 
@@ -85,7 +181,7 @@
           </tr>
         </thead>
         <tbody id="steps-table-body">
-          </tbody>
+        </tbody>
       </table>
     </div>
   </div>
@@ -110,7 +206,7 @@
       fetch('/api/bot/config').then(r => r.json()).then(data => {
         const tbody = document.getElementById('steps-table-body');
         tbody.innerHTML = "";
-        
+
         Object.keys(data.flows).forEach(id => {
           const flow = data.flows[id];
           tbody.innerHTML += `
@@ -145,17 +241,17 @@
       const message = document.getElementById('step_message').value;
       const labels = document.querySelectorAll('.opt-label');
       const actions = document.querySelectorAll('.opt-action');
-      
+
       const options = [];
       labels.forEach((l, i) => {
-        if(l.value) options.push({ label: l.value, action: actions[i].value });
+        if (l.value) options.push({ label: l.value, action: actions[i].value });
       });
 
       const payload = { id, message, options };
 
-      fetch('/admin/api/steps/save?auth=admin123', {
+      fetch('/admin/api/steps/save?auth={{ auth_token }}', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).then(() => {
         alert("Passo salvo!");
@@ -169,7 +265,7 @@
       document.getElementById('step_id').value = id;
       document.getElementById('step_id').disabled = true;
       document.getElementById('step_message').value = data.message;
-      
+
       const container = document.getElementById('buttons-container');
       container.innerHTML = "";
       data.options.forEach(opt => addButtonRow(opt.label, opt.action));
@@ -193,10 +289,37 @@
       };
       fetch('/admin/save_config?auth=admin123', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).then(() => alert("Configurações gerais salvas!"));
     }
+
+    function deleteStep(id) {
+      // 1. Confirmação de segurança
+      if (!confirm(`Tem certeza que deseja excluir o passo "${id}"? Isso pode quebrar botões que levam a ele.`)) {
+        return;
+      }
+
+      // 2. Chamada para a API que criamos no app.py
+      fetch(`/admin/api/steps/delete/${id}?auth=admin123`, {
+        method: 'DELETE'
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            alert("Passo removido com sucesso!");
+            loadSteps(); // Atualiza a lista na tela automaticamente
+          } else {
+            alert("Erro ao excluir: " + (data.error || "Erro desconhecido"));
+          }
+        })
+        .catch(err => {
+          console.error("Erro na requisição:", err);
+          alert("Erro de conexão ao tentar excluir.");
+        });
+    }
+  
   </script>
 </body>
+
 </html>
