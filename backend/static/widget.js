@@ -43,6 +43,29 @@
       const inputEl = widget.querySelector("#evq-input");
       const sendEl = widget.querySelector("#evq-send");
 
+      // --- FUNÇÕES DE PERSISTÊNCIA ---
+      function saveChatContext(state, bodyHtml) {
+        const data = {
+          memory: state.memory,
+          history: bodyHtml,
+          lastStep: state.currentStep,
+          timestamp: new Date().getTime()
+        };
+        localStorage.setItem('filiPingu_session', JSON.stringify(data));
+      }
+
+      function loadChatContext() {
+        const saved = localStorage.getItem('filiPingu_session');
+        if (!saved) return null;
+
+        const data = JSON.parse(saved);
+        // Expira após 24h para não ficar obsoleto
+        const isExpired = new Date().getTime() - data.timestamp > 24 * 60 * 60 * 1000;
+        return isExpired ? null : data;
+      }
+
+
+
       // --- RENDERIZADORES ---
       function bot(msg) {
         const d = document.createElement("div");
@@ -50,6 +73,7 @@
         d.innerHTML = msg;
         bodyEl.appendChild(d);
         scrollBottom();
+        saveChatContext(state, bodyEl.innerHTML); // <--- SALVA AQUI
       }
 
       function user(msg) {
@@ -58,6 +82,7 @@
         d.innerText = msg;
         bodyEl.appendChild(d);
         scrollBottom();
+        saveChatContext(state, bodyEl.innerHTML); // <--- SALVA AQUI
       }
 
       function quickButtons(list) {
@@ -105,8 +130,14 @@
             const phone = cfg.whatsappNumber.replace(/\D/g, '');
             window.open(`https://wa.me/${phone}`, "_blank");
             break;
-          
+
           case "sys_reload":
+            startConversation();
+            break;
+            
+          case "sys_reset":
+            localStorage.removeItem('filiPingu_session');
+            state.memory = {};
             startConversation();
             break;
 
@@ -120,8 +151,19 @@
 
       function startConversation() {
         widget.style.display = "flex";
-        bodyEl.innerHTML = "";
-        navigateTo('main_menu');
+        const context = loadChatContext();
+
+        if (context && context.history) {
+          // RESTAURA O CHAT ANTERIOR
+          bodyEl.innerHTML = context.history;
+          state.memory = context.memory;
+          bot("<em>Bem-vindo de volta! Continue de onde paramos ou digite 'reiniciar'.</em>");
+          scrollBottom();
+        } else {
+          // INICIA DO ZERO
+          bodyEl.innerHTML = "";
+          navigateTo('main_menu');
+        }
       }
 
       // FAB

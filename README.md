@@ -1,86 +1,59 @@
-🐧 FiliPingu - Chatbot Dinâmico para Estúdios de Tattoo
-Este projeto é um ecossistema de atendimento automatizado composto por um Widget de Chat inteligente, um Backend em Python e um Painel Administrativo para gestão de fluxos em tempo real.
+🐧 FiliPingu - Plataforma de Chatbot Dinâmico para Estúdios
+O FiliPingu evoluiu de um simples script para uma plataforma completa de atendimento. Agora, o sistema conta com um motor de renderização de fluxos, persistência de dados no navegador e gestão de segurança profissional.
 
-🚀 O que mudou (Arquitetura Atual)
-O chatbot não possui mais respostas "hardcoded" (fixas no código). Ele funciona como um motor de renderização de estados:
+🚀 Novas Funcionalidades (v2.0)
+Persistência de Sessão (Memory): O chatbot agora utiliza localStorage para lembrar onde o usuário parou. Se o cliente fechar a página ou atualizar o navegador, o histórico e os dados coletados (nome, preferências) são restaurados automaticamente.
 
-O administrador define "Passos" (Steps) no painel.
+Segurança via Ambiente (.env): Implementação de proteção para rotas administrativas usando variáveis de ambiente, seguindo as melhores práticas de segurança para evitar exposição de credenciais em repositórios.
 
-Cada passo tem uma mensagem e botões de resposta.
+Motor de Fluxo 100% CRUD: O código JavaScript tornou-se um motor genérico. Toda a lógica de perguntas e botões é buscada dinamicamente no SQLite, permitindo mudanças em tempo real pelo Painel Admin.
 
-Cada botão aponta para o ID de outro passo, criando uma árvore de decisão infinita sem tocar no código JavaScript.
+🛠️ Tecnologias e Dependências
+Linguagem: Python 3.x
 
-🛠️ Tecnologias Utilizadas
-Backend: Python 3 + Flask.
+Web Framework: Flask & Flask-SocketIO
 
-Banco de Dados: SQLite (persistência de configurações e fluxos).
+Segurança: python-dotenv para gestão de variáveis sensíveis.
 
-Comunicação: JSON via REST API + WebSockets (Socket.io) para notificações em tempo real.
+Persistência: SQLite (Servidor) e LocalStorage (Cliente).
 
-Frontend: Vanilla JavaScript (ES6+), CSS3 e HTML5.
-
-✨ Funcionalidades Principais
-Painel Admin CRUD: Interface para criar, editar e excluir perguntas e botões do fluxo de conversa.
-
-Motor Genérico: O widget carrega as configurações do banco e navega pelos IDs dinamicamente.
-
-Ações de Sistema (sys_): Suporte a funções especiais como redirecionamento para WhatsApp (sys_whatsapp) e reinicialização de chat (sys_reload).
-
-Configurações Globais: Edição do nome do estúdio e número de contato diretamente pelo painel.
-
-Notificações em Tempo Real: Alertas via Socket.io para novos eventos de interesse.
-
-📂 Estrutura do Projeto
-Plaintext
-
-/
-├── backend/
-│   ├── app.py              # Servidor Flask e Rotas de API
-│   ├── init_db.py          # Script de inicialização do SQLite
-│   ├── estudio.db          # Banco de dados (Gerado ao iniciar)
-│   └── templates/
-│       ├── index.html      # Página demo (Landing Page)
-│       └── admin.html      # Painel de controle do gestor
-├── static/
-│   ├── css/
-│   │   └── style.css       # Estilização do Widget e Admin
-│   └── js/
-│       └── widget.js       # O "Motor" do Chatbot
-└── README.md
-⚙️ Como Instalar e Rodar
+📦 Instalação e Configuração
 Instale as dependências:
 
 Bash
 
-pip install flask flask-socketio
+pip install flask flask-socketio python-dotenv
+Configure o Ambiente: Crie um arquivo .env na raiz do projeto (o sistema ignora este arquivo no Git):
+
+Plaintext
+
+ADMIN_AUTH_TOKEN=sua_senha_secreta_aqui
 Inicialize o Banco de Dados:
 
 Bash
 
 python backend/init_db.py
-Inicie o servidor:
+Execute o Servidor:
 
 Bash
 
 python backend/app.py
-Acesse:
+📂 Arquitetura do Sistema
+app.py: Gerencia rotas de API, segurança via Token e entrega de templates.
 
-Widget: http://localhost:5000
+widget.js: Motor inteligente que renderiza fluxos e gerencia a persistência local.
 
-Admin: http://localhost:5000/admin (Credencial atual: auth=admin123)
+admin.html: Interface completa para gestão de agendamentos e criação de fluxos de conversa (CRUD).
 
-💡 Como configurar novos fluxos
-No Admin, crie um passo com um ID Único (ex: faq_horario).
+💡 Como utilizar o Gerenciador de Fluxos
+Acesse o Painel Admin (/admin?auth=SUA_SENHA).
 
-Defina a mensagem que o Pinguim dirá.
+Crie um Passo com um ID único (ex: info_tattoo).
 
-No ID de Destino de qualquer botão, aponte para o ID criado.
+No campo Botões, defina o texto que o usuário verá e para qual ID de Destino ele será levado.
 
-Para links externos de WhatsApp, utilize a ação reservada sys_whatsapp.
+Para ações especiais, utilize os prefixos de sistema:
 
-📝 Próximos Passos (Roadmap)
-[ ] Adicionar suporte a upload de imagens no chat.
+sys_whatsapp: Abre o link direto para o número configurado.
 
-[ ] Implementar sistema de agendamento com calendário real.
-
-[ ] Dashboard de Analytics (Gráficos de cliques e conversões).
+sys_reset: Limpa a memória local e reinicia o chat.
