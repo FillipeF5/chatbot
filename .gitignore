@@ -3,8 +3,10 @@
 venv/
 
 # Arquivos de ambiente
-/.env
-/.env.example
+.env
+.env.*
+*.env
+.env.example
 
 # Caches e compilados
 __pycache__/
