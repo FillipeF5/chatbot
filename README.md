@@ -44,8 +44,8 @@ FiliPingu é uma plataforma de atendimento por chatbot pensada para estúdios de
 
 1) Clonar / abrir repositório
 ```powershell
-# Windows PowerShell
-cd C:\Users\uva004714\Downloads\chatbot-main
+# Bash
+git clone https://github.com/FillipeF5/chatbot.git
 ```
 
 2) Criar e ativar ambiente virtual (recomendado)
